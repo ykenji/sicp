@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+<title>SICP Exercise</title>
+<style type="text/css">
+  div#bs-console{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  div#bs-opecode{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  span.dump_opecode{ color:orange; }
+  span.dump_constant{ color:red; }
+  div.bs-snippet{
+    white-space:pre;
+    cursor:pointer;
+  }
+  textarea{
+    font-family:monospace, serif;
+  }
+  blockquote{
+    margin:1rem 0;
+    padding:.5rem 1rem .5rem .75rem;
+    border-inline-start:.25rem solid #e9ecef;
+    border-radius:.25rem
+  }
+</style>
+<!--
+<script>
+MathJax = {
+  chtml: {
+    matchFontHeight: false
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+-->
+</head>
+<body>
+
+<h1>SICP Exercise 1.4</h1>
+
+<blockquote>
+Observe that our model of evaluation allows for combinations whose operators are compound expressions. Use this observation to describe the behavior of the following procedure:
+<pre><code>
+(define (a-plus-abs-b a b)
+  ((if (> b 0) + -) a b))
+</code></pre>
+</blockquote>
+
+<table><tr><td valign="top">
+<textarea id="bs-input" rows="34" cols="80">
+(define (a-plus-abs-b a b)
+  ((if (> b 0) + -) a b))
+
+(a-plus-abs-b 2 -3)
+;((if (> b 0) + -) a b))
+;((if (> -3 0) + -) a b))
+;((if #f + -) a b))
+;(- a b)
+;(- 2 -3)
+
+(a-plus-abs-b 2 3)
+;((if (> b 0) + -) a b))
+;((if (> 3 0) + -) a b))
+;((if #t + -) a b))
+;(+ a b)
+;(+ 2 3)
+</textarea><br>
+<div style="float:right;">
+<span id="time"></span>
+<input type="button" value="eval" onclick="bs_eval()">
+</div><br style="clear:both"/>
+<div id="bs-console"></div>
+<div id="bs-opecode"></div>
+</td></tr></table>
+<script src="./jquery.js"></script>
+<script type="module" src="./biwascheme-0.7.5.js"></script>
+<script type="module">
+let on_error = function(e) {
+  BiwaScheme.Port.current_error.put_string(e.message);
+  throw(e);
+};
+window.bs_eval = function() {
+  $("#bs-console").empty();
+  $("#bs-opecode").empty();
+  let src = $("#bs-input").val();
+  let before = new Date();
+  let comment = false
+  let code = ''
+  src.split(/\r?\n/).forEach(function(str, key, arr) {
+    code += str + '\n'
+    if (!comment && str == '#|') comment = true
+    else if (comment && str == '|#') comment = false
+    else if (!comment && code.replace(/\r?\n/g, '').length != 0 &&
+      (str.replace(/\r?\n/g, '').length == 0 || key == arr.length - 1)) {
+      let biwascheme = new BiwaScheme.Interpreter(on_error);
+      let vmcode = biwascheme.compile(code);
+      let dump = (new BiwaScheme.Dumper()).dump_opc(vmcode.il);
+      $("#bs-opecode").append(dump + '<br>');
+      biwascheme.evaluate(code, function(result) {
+        $("#bs-console").append(result + '<br>');
+      })
+      code = ''
+    }
+  });
+  let after = new Date();
+  $("#time").html("Time: " + (after - before) / 1000 + "sec");
+  return false;
+}
+</script>
+</body>
+</html>
