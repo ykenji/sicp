@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+<title>SICP Exercise</title>
+<style type="text/css">
+  div#bs-console{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  div#bs-opecode{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  span.dump_opecode{ color:orange; }
+  span.dump_constant{ color:red; }
+  div.bs-snippet{
+    white-space:pre;
+    cursor:pointer;
+  }
+  textarea{
+    font-family:monospace, serif;
+  }
+  blockquote{
+    margin:1rem 0;
+    padding:.5rem 1rem .5rem .75rem;
+    border-inline-start:.25rem solid #e9ecef;
+    border-radius:.25rem
+  }
+</style>
+<!--
+<script>
+MathJax = {
+  chtml: {
+    matchFontHeight: false
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+-->
+</head>
+<body>
+
+<h1>SICP Exercise 1.7</h1>
+
+<blockquote>
+The <tt>good-enough?</tt> test used in computing square roots will not be very effective for finding the square roots of very small numbers. Also, in real computers, arithmetic operations are almost always performed with limited precision. This makes our test inadequate for very large numbers. Explain these statements, with examples showing how the test fails for small and large numbers. An alternative strategy for implementing good-enough? is to watch how guess changes from one iteration to the next and to stop when the change is a very small fraction of the guess. Design a square-root procedure that uses this kind of end test. Does this work better for small and large numbers?
+</blockquote>
+
+<table><tr><td valign="top">
+<textarea id="bs-input" rows="34" cols="80">
+(define (square x) (* x x))
+(define (abs x)
+  (if (< x 0)
+      (- x)
+      x))
+(define (average x y)
+  (/ (+ x y) 2))
+(define (check-root-2 n)
+  (define x (* 2 n n))
+  (define y (sqrt x))
+  (if (and (> y (* 1.414 n))
+           (< y (* 1.415 n)))
+      (print x " -> " y " OK")
+      (print x " -> " y " NG")))
+
+; old sqrt
+(define (sqrt-iter guess x)
+  (if (good-enough? guess x)
+      guess
+      (sqrt-iter (improve guess x) x)))
+(define (improve guess x)
+  (average guess (/ x guess)))
+(define (good-enough? guess x)
+  (< (abs (- (square guess) x)) 0.001))
+(define (sqrt x)
+  (sqrt-iter 1.0 x))
+
+(print "[old sqrt]")
+(check-root-2 0.0001)
+(check-root-2 0.01)
+(check-root-2 1)
+(check-root-2 100)
+(check-root-2 10000)
+(check-root-2 1000000)
+;(check-root-2 100000000)
+(print (* 2 100000000 100000000) " -> not respond NG")
+
+; new sqrt
+(define (sqrt-iter prev-guess guess x)
+  (if (good-enough? prev-guess guess)
+      guess
+      (sqrt-iter guess (improve guess x) x)))
+(define (good-enough? prev-guess guess)
+  (< (/ (abs (- guess prev-guess)) guess) 0.001))
+(define (sqrt x)
+  (sqrt-iter 1.0 (improve 1.0 x) x))
+
+(print "[new sqrt]")
+(check-root-2 0.00000001)
+(check-root-2 0.000001)
+(check-root-2 0.0001)
+(check-root-2 0.01)
+(check-root-2 1)
+(check-root-2 100)
+(check-root-2 10000)
+(check-root-2 1000000)
+(check-root-2 100000000)
+(check-root-2 10000000000)
+</textarea><br>
+<div style="float:right;">
+<span id="time"></span>
+<input type="button" value="eval" onclick="bs_eval()">
+</div><br style="clear:both"/>
+<div id="bs-console"></div>
+<div id="bs-opecode"></div>
+</td></tr></table>
+<script src="./jquery.js"></script>
+<script type="module" src="./biwascheme-0.7.5.js"></script>
+<script type="module">
+let on_error = function(e) {
+  BiwaScheme.Port.current_error.put_string(e.message);
+  throw(e);
+};
+window.bs_eval = function() {
+  $("#bs-console").empty();
+  $("#bs-opecode").empty();
+  let src = $("#bs-input").val();
+  let before = new Date();
+  let comment = false
+  let code = ''
+  src.split(/\r?\n/).forEach(function(str, key, arr) {
+    code += str + '\n'
+    if (!comment && str == '#|') comment = true
+    else if (comment && str == '|#') comment = false
+    else if (!comment && code.replace(/\r?\n/g, '').length != 0 &&
+      (str.replace(/\r?\n/g, '').length == 0 || key == arr.length - 1)) {
+      let biwascheme = new BiwaScheme.Interpreter(on_error);
+      let vmcode = biwascheme.compile(code);
+      let dump = (new BiwaScheme.Dumper()).dump_opc(vmcode.il);
+      $("#bs-opecode").append(dump + '<br>');
+      biwascheme.evaluate(code, function(result) {
+        $("#bs-console").append(result + '<br>');
+      })
+      code = ''
+    }
+  });
+  let after = new Date();
+  $("#time").html("Time: " + (after - before) / 1000 + "sec");
+  return false;
+}
+</script>
+</body>
+</html>
