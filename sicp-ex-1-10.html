@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+<title>SICP Exercise</title>
+<style type="text/css">
+  div#bs-console{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  div#bs-opecode{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  span.dump_opecode{ color:orange; }
+  span.dump_constant{ color:red; }
+  div.bs-snippet{
+    white-space:pre;
+    cursor:pointer;
+  }
+  textarea{
+    font-family:monospace, serif;
+  }
+  blockquote{
+    margin:1rem 0;
+    padding:.5rem 1rem .5rem .75rem;
+    border-inline-start:.25rem solid #e9ecef;
+    border-radius:.25rem
+  }
+</style>
+<script>
+MathJax = {
+  chtml: {
+    matchFontHeight: false
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+</head>
+<body>
+
+<h1>SICP Exercise 1.10</h1>
+
+<blockquote>
+The following procedure computes a mathematical function called Ackermann's function.
+
+<pre><code>
+(define (A x y)
+  (cond ((= y 0) 0)
+        ((= x 0) (* 2 y))
+        ((= y 1) 2)
+        (else (A (- x 1)
+                 (A x (- y 1))))))
+</pre></code>
+
+What are the values of the following expressions?
+
+<pre><code>
+(A 1 10)
+
+(A 2 4)
+
+(A 3 3)
+</pre></code>
+
+Consider the following procedures, where <tt>A</tt> is the procedure defined above:
+
+<pre><code>
+(define (f n) (A 0 n))
+
+(define (g n) (A 1 n))
+
+(define (h n) (A 2 n))
+
+(define (k n) (* 5 n n))
+</pre></code>
+
+Give concise mathematical definitions for the functions computed by the procedures <tt>f</tt>, <tt>g</tt>, and <tt>h</tt> for positive integer values of <tt>n</tt>. For example, <tt>(k n)</tt> computes \(5n^2\).
+</blockquote>
+
+<table><tr><td valign="top">
+<textarea id="bs-input" rows="34" cols="80">
+(define (A x y)
+        (cond ((= y 0) 0)
+        ((= x 0) (* 2 y))
+        ((= y 1) 2)
+        (else (A (- x 1) (A x (- y 1))))))
+
+(A 1 10)
+
+(A 2 4)
+
+(A 3 3)
+
+(define (f n) (A 0 n)) ; 2 * n
+
+(print "(f 0) = (A 0 0) = " (f 0))
+(print "(f 1) = (A 0 1) = " (f 1))
+(print "(f 2) = (A 0 2) = " (f 2))
+(print "(f 3) = (A 0 3) = " (f 3))
+(print "(f 4) = (A 0 4) = " (f 4))
+
+(define (g n) (A 1 n)) ; 0 if n = 0, otherwise 2^n
+
+(print "(g 0) = (A 1 0) = " (g 0))
+(print "(g 1) = (A 1 1) = " (g 1))
+(print "(g 2) = (A 1 2) = " (g 2))
+(print "(g 3) = (A 1 3) = " (g 3))
+(print "(g 4) = (A 1 4) = " (g 4))
+
+(define (h n) (A 2 n)) ; 0 if n = 0, otherwise 2^^n (^^ is tetration)
+
+(print "(h 0) = (A 2 0) = " (h 0))
+(print "(h 1) = (A 2 1) = " (h 1))
+(print "(h 2) = (A 2 2) = " (h 2))
+(print "(h 3) = (A 2 3) = " (h 3))
+(print "(h 4) = (A 2 4) = " (h 4))
+
+(define (AA x y)
+        (cond ((= y 0) 0)
+        ((= x 0) (* 3 y))
+        ((= y 1) 3)
+        (else (AA (- x 1) (AA x (- y 1))))))
+
+(print "(AA 0 1) = " (AA 0 1))
+(print "(AA 0 2) = " (AA 0 2))
+(print "(AA 0 3) = " (AA 0 3))
+(print "(AA 1 1) = " (AA 1 1))
+(print "(AA 1 2) = " (AA 1 2))
+(print "(AA 1 3) = " (AA 1 3))
+(print "(AA 2 1) = " (AA 2 1))
+(print "(AA 2 2) = " (AA 2 2))
+(print "(AA 2 3) = " (AA 2 3))
+(print "(AA 3 1) = " (AA 3 1))
+(print "(AA 3 2) = " (AA 3 2))
+(print "(AA 3 3) = Infinite")
+</textarea><br>
+<div style="float:right;">
+<span id="time"></span>
+<input type="button" value="eval" onclick="bs_eval()">
+</div><br style="clear:both"/>
+<div id="bs-console"></div>
+<div id="bs-opecode"></div>
+</td></tr></table>
+<ul>
+<li>hyper0: increment
+<ul>
+<li>\(1+1=2\)
+<li>\(1+2=1+1+1=3\)
+<li>\(1+3=1+1+1+1=4\)
+</ul>
+<li>hyper1: addition
+<ul>
+<li>\(3+1=4\)
+<li>\(3+2=3+1+1=5\)
+<li>\(3+3=3+1+1+1=6\)
+</ul>
+
+<li>hyper2: multiplication
+<ul>
+<li>\(3\times1=3\)
+<li>\(3\times2=3+3=6\)
+<li>\(3\times3=3+3+3=9\)
+</ul>
+
+<li>hyper3: exponentiation
+<ul>
+<li>\(3^1=3\)
+<li>\(3^2=3\times3=9\)
+<li>\(3^3=3\times3\times3=27\)
+</ul>
+
+<li>hyper4: tetration
+<ul>
+<li>3^^1=<sup>1</sup>3=\(3\)
+<li>3^^2=<sup>2</sup>3=\(3^3\)
+<li>3^^3=<sup>3</sup>3=\(3^{3^3}=3^{27}=7625597484987\)
+</ul>
+
+<li>hyper5: pentation
+<ul>
+<li>3^^^1=\(3\)
+<li>3^^^2=<sup>3</sup>3=\(3^{3^3}=3^{27}=7625597484987\)
+<li>3^^^3=<sup><sup>3</sup>3</sup>3=<sup>3<sup>3<sup>3</sup></sup></sup>3=<sup>3<sup>27</sup></sup>3=<sup>7625597484987</sup>3=\(\underbrace{3^{3^{3^{3^{.^{.^{.^{3^{3^{3}}}}}}}}}}_{7625597484987\ copies\ of\ 3}\)
+</ul>
+<script src="./jquery.js"></script>
+<script type="module" src="./biwascheme-0.7.5.js"></script>
+<script type="module">
+let on_error = function(e) {
+  BiwaScheme.Port.current_error.put_string(e.message);
+  throw(e);
+};
+window.bs_eval = function() {
+  $("#bs-console").empty();
+  $("#bs-opecode").empty();
+  let src = $("#bs-input").val();
+  let before = new Date();
+  let comment = false
+  let code = ''
+  src.split(/\r?\n/).forEach(function(str, key, arr) {
+    code += str + '\n'
+    if (!comment && str == '#|') comment = true
+    else if (comment && str == '|#') comment = false
+    else if (!comment && code.replace(/\r?\n/g, '').length != 0 &&
+      (str.replace(/\r?\n/g, '').length == 0 || key == arr.length - 1)) {
+      let biwascheme = new BiwaScheme.Interpreter(on_error);
+      let vmcode = biwascheme.compile(code);
+      let dump = (new BiwaScheme.Dumper()).dump_opc(vmcode.il);
+      $("#bs-opecode").append(dump + '<br>');
+      biwascheme.evaluate(code, function(result) {
+        $("#bs-console").append(result + '<br>');
+      })
+      code = ''
+    }
+  });
+  let after = new Date();
+  $("#time").html("Time: " + (after - before) / 1000 + "sec");
+  return false;
+}
+</script>
+</body>
+</html>
