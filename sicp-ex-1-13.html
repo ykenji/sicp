@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+<title>SICP Exercise</title>
+<style type="text/css">
+  div#bs-console{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  div#bs-opecode{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  span.dump_opecode{ color:orange; }
+  span.dump_constant{ color:red; }
+  div.bs-snippet{
+    white-space:pre;
+    cursor:pointer;
+  }
+  textarea{
+    font-family:monospace, serif;
+  }
+  blockquote{
+    margin:1rem 0;
+    padding:.5rem 1rem .5rem .75rem;
+    border-inline-start:.25rem solid #e9ecef;
+    border-radius:.25rem
+  }
+</style>
+<script>
+MathJax = {
+  chtml: {
+    matchFontHeight: false
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+</head>
+<body>
+
+<h1>SICP Exercise 1.13</h1>
+
+<blockquote>
+Prove that \(\text{Fib}(n)\) is the closest integer to \(\varphi^{n}/\sqrt{5}\), where  \(\varphi=(1+\sqrt{5})/2\). Hint: Let \(\psi=(1-\sqrt{5})/2\). Use induction and the definition of the Fibonacci numbers (see section 1.2.2) to prove that \(\text{Fib}(n)=(\varphi^{n}- \psi^{n})/\sqrt{5}\).
+</blockquote>
+
+<table><tr><td valign="top">
+<textarea id="bs-input" rows="34" cols="80">
+#|
+[命題] Fib(n) が φ^n/√5 に最も近い整数であることを証明せよ。 φ=(1+√5)/2 とする。
+[ヒント] Fib(n)=(φ^n-ψ^n)/√5 であることを証明せよ。ψ=(1-√5)/2 とする。
+
+
+はじめにヒントの命題を証明する。
+
+Fib(n)=(φ^n-ψ^n)/√5 ... (A) とする
+
+n=0 のとき
+Fib(0)=(φ^0-ψ^0)/√5
+      =(1-1)/√5
+      =0
+よって、(A) は成り立つ。
+
+n=1 のとき
+Fib(1)=(φ^1 - ψ^1)/√5
+      =((1+√5)/2-(1-√5)/2)/√5
+      =√5/√5
+      =1
+よって、(A) は成り立つ。
+
+n>=2 のとき
+n-1, n-2 の場合に成り立つと仮定する。
+Fib(n)=Fib(n-1)+Fib(n-2)
+      =(φ^(n-1)-ψ^(n-1))/√5+(φ^(n-2)-ψ^(n-2))/√5
+      =(φ^(n-1)-ψ^(n-1)+φ^(n-2)-ψ^(n-2))/√5
+      =(φ^(n-1)+φ^(n-2)-ψ^(n-1)-ψ^(n-2))/√5
+      =(φ^(n-1)+φ^(n-2)-(ψ^(n-1)+ψ^(n-2)))/√5
+      =(φ^(n-2)(φ+1)-ψ^(n-2)(ψ+1))/√5
+ここで、
+φ^2 =((1+√5)/2)^2
+     =(1+2√5+5)/4
+     =(6+2√5/4
+     =(3+√5)/2
+     =(1+√5)/2+1
+     =φ+1
+ψ^2 = ((1-√5)/2)^2
+     = (1-2√5+5)/4
+     =(6-2√5/4
+     =(3-√5)/2
+     =(1-√5)/2+1
+     =ψ+1
+だから
+Fib(n)=(φ^(n-2)φ^2-ψ^(n-2)ψ^2)/√5
+      =(φ^n-ψ^n)/√5
+よって、n のときも (A) は成り立つ。
+数学的帰納法から、すべての整数 n で (A) は成り立つ。■
+
+つぎに、命題を証明する。
+
+Fib(n) が φ^n/√5 に最も近い整数であることを証明するには
+ψ^n/√5 の絶対値が 0.5 より小さいことを証明すればよい。
+|#
+
+(define (square x) (* x x))
+(define (pow x y) (if (= y 0) 1 (* x (pow x (- y 1)))))
+(define (abs x) (if (< x 0) (- x) x))
+(define (average x y) (/ (+ x y) 2))
+
+(define (sqrt x)
+  (define (good-enough? prev-guess guess)
+    (< (/ (abs (- guess prev-guess)) guess) 0.001))
+  (define (improve guess x) (average guess (/ x guess)))
+  (define (sqrt-iter prev-guess guess x)
+    (if (good-enough? prev-guess guess)
+        guess
+        (sqrt-iter guess (improve guess x) x)))
+  (sqrt-iter 1.0 (improve 1.0 x) x))
+
+(define psi (/ (- 1 (sqrt 5)) 2))
+(print "|ψ^n/√5|=|" psi "^n/" (sqrt 5) "| < 0.5")
+
+(print "|ψ^0/√5|=" (abs (/ (pow psi 0) (sqrt 5))) " < 0.5")
+(print "|ψ^1/√5|=" (abs (/ (pow psi 1) (sqrt 5))) " < 0.5")
+(print "|ψ^2/√5|=" (abs (/ (pow psi 2) (sqrt 5))) " < 0.5")
+(print "|ψ^3/√5|=" (abs (/ (pow psi 3) (sqrt 5))) " < 0.5")
+(print "|ψ^4/√5|=" (abs (/ (pow psi 4) (sqrt 5))) " < 0.5")
+(print "|ψ^5/√5|=" (abs (/ (pow psi 5) (sqrt 5))) " < 0.5")
+
+#|
+|ψ^n/√5| は常に 0.5 より小さいので、Fib(n) は φ^n/√5 に最も近い整数となる。■
+|#
+</textarea><br>
+<div style="float:right;">
+<span id="time"></span>
+<input type="button" value="eval" onclick="bs_eval()">
+</div><br style="clear:both"/>
+<div id="bs-console"></div>
+<div id="bs-opecode"></div>
+</td></tr></table>
+<script src="./jquery.js"></script>
+<script type="module" src="./biwascheme-0.7.5.js"></script>
+<script type="module">
+let on_error = function(e) {
+  BiwaScheme.Port.current_error.put_string(e.message);
+  throw(e);
+};
+window.bs_eval = function() {
+  $("#bs-console").empty();
+  $("#bs-opecode").empty();
+  let src = $("#bs-input").val();
+  let before = new Date();
+  let comment = false
+  let code = ''
+  src.split(/\r?\n/).forEach(function(str, key, arr) {
+    code += str + '\n'
+    if (!comment && str == '#|') comment = true
+    else if (comment && str == '|#') comment = false
+    else if (!comment && code.replace(/\r?\n/g, '').length != 0 &&
+      (str.replace(/\r?\n/g, '').length == 0 || key == arr.length - 1)) {
+      let biwascheme = new BiwaScheme.Interpreter(on_error);
+      let vmcode = biwascheme.compile(code);
+      let dump = (new BiwaScheme.Dumper()).dump_opc(vmcode.il);
+      $("#bs-opecode").append(dump + '<br>');
+      biwascheme.evaluate(code, function(result) {
+        $("#bs-console").append(result + '<br>');
+      })
+      code = ''
+    }
+  });
+  let after = new Date();
+  $("#time").html("Time: " + (after - before) / 1000 + "sec");
+  return false;
+}
+</script>
+</body>
+</html>
