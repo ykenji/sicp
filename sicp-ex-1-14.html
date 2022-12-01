@@ -247,9 +247,9 @@ window.bs_eval = function() {
     else if (comment && str == '|#') comment = false
     else if (!comment && code.replace(/\r?\n/g, '').length != 0 &&
       (str.replace(/\r?\n/g, '').length == 0 || key == arr.length - 1)) {
-      let biwascheme = new BiwaScheme.InterpreteT(on_error);
+      let biwascheme = new BiwaScheme.Interpreter(on_error);
       let vmcode = biwascheme.compile(code);
-      let dump = (new BiwaScheme.DumpeT()).dump_opc(vmcode.il);
+      let dump = (new BiwaScheme.Dumper()).dump_opc(vmcode.il);
       $("#bs-opecode").append(dump + '<br>');
       biwascheme.evaluate(code, function(result) {
         $("#bs-console").append(result + '<br>');
