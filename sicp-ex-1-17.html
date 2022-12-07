@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+<title>SICP Exercise</title>
+<style type="text/css">
+  div#bs-console{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  div#bs-opecode{
+    border:1px solid black;
+    padding:1em;
+    margin-top:1em;
+  }
+  span.dump_opecode{ color:orange; }
+  span.dump_constant{ color:red; }
+  div.bs-snippet{
+    white-space:pre;
+    cursor:pointer;
+  }
+  textarea{
+    font-family:monospace, serif;
+  }
+  blockquote{
+    margin:1rem 0;
+    padding:.5rem 1rem .5rem .75rem;
+    border-inline-start:.25rem solid #e9ecef;
+    border-radius:.25rem
+  }
+</style>
+<!--
+<script>
+MathJax = {
+  chtml: {
+    matchFontHeight: false
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+-->
+</head>
+<body>
+
+<h1>SICP Exercise 1.17</h1>
+
+<blockquote>
+The exponentiation algorithms in this section are based on performing exponentiation by means of repeated multiplication.
+In a similar way, one can perform integer multiplication by means of repeated addition.
+The following multiplication procedure (in which it is assumed that our language can only add, not multiply) is analogous to the <tt>expt</tt> procedure:
+<pre><code>
+(define (* a b)
+  (if (= b 0)
+      0
+      (+ a (* a (- b 1)))))
+</code></pre>
+This algorithm takes a number of steps that is linear in <tt>b</tt>.
+Now suppose we include, together with addition, operations <tt>double</tt>, which doubles an integer, and <tt>halve</tt>, which divides an (even) integer by 2.
+Using these, design a multiplication procedure analogous to <tt>fast-expt</tt> that uses a logarithmic number of steps.
+</blockquote>
+
+<table><tr><td valign="top">
+<textarea id="bs-input" rows="34" cols="80">
+(define (even? n)
+  (= (remainder n 2) 0))
+(define (double x) (* x 2))
+(define (halve x) (/ x 2))
+
+(define (fast-multi a b)
+  (cond ((= b 0) 0)
+        ((even? b) (double (fast-multi a (halve b))))
+        (else (+ a (fast-multi a (- b 1))))))
+
+
+(fast-multi 0 0)
+
+(fast-multi 1 0)
+
+(fast-multi 0 1)
+
+(fast-multi 1 1)
+
+(fast-multi 4 9)
+
+(fast-multi 99 99)
+</textarea><br>
+<div style="float:right;">
+<span id="time"></span>
+<input type="button" value="eval" onclick="bs_eval()">
+</div><br style="clear:both"/>
+<div id="bs-console"></div>
+<div id="bs-opecode"></div>
+</td></tr></table>
+<script src="./jquery.js"></script>
+<script type="module" src="./biwascheme-0.7.5.js"></script>
+<script type="module">
+let on_error = function(e) {
+  BiwaScheme.Port.current_error.put_string(e.message);
+  throw(e);
+};
+window.bs_eval = function() {
+  $("#bs-console").empty();
+  $("#bs-opecode").empty();
+  let src = $("#bs-input").val();
+  let before = new Date();
+  let comment = false
+  let code = ''
+  src.split(/\r?\n/).forEach(function(str, key, arr) {
+    code += str + '\n'
+    if (!comment && str == '#|') comment = true
+    else if (comment && str == '|#') comment = false
+    else if (!comment && code.replace(/\r?\n/g, '').length != 0 &&
+      (str.replace(/\r?\n/g, '').length == 0 || key == arr.length - 1)) {
+      let biwascheme = new BiwaScheme.Interpreter(on_error);
+      let vmcode = biwascheme.compile(code);
+      let dump = (new BiwaScheme.Dumper()).dump_opc(vmcode.il);
+      $("#bs-opecode").append(dump + '<br>');
+      biwascheme.evaluate(code, function(result) {
+        $("#bs-console").append(result + '<br>');
+      })
+      code = ''
+    }
+  });
+  let after = new Date();
+  $("#time").html("Time: " + (after - before) / 1000 + "sec");
+  return false;
+}
+</script>
+</body>
+</html>
